@@ -1,0 +1,90 @@
+# Perencanaan MVP: Panel Admin (Rekapan Mitra)
+
+## Latar Belakang
+Pengguna "Admin" memerlukan akses khusus untuk mengontrol konfigurasi global (seperti master data produk dan harga) serta mengelola User (mitra/agen) yang menggunakan aplikasi. Ini akan disatukan dalam sebuah Panel Admin yang terpisah dari *dashboard* utama milik mitra. Logic produk yang sebelumnya dikelola per-mitra akan dipindahkan (disimpan) menjadi Master Data di sisi admin agar terpusat.
+
+## Tujuan MVP
+Membangun antarmuka dan fungsi dasar (Minimum Viable Product) bagi pengguna dengan *role* Admin agar dapat:
+1. **Mengelola Master Data Produk**: Menambah, mengubah, mengatur harga jual ke mitra, beserta paket tiering harganya.
+2. **Manajemen User (Mitra)**: Melihat daftar pengguna terdaftar, mengubah level kemitraannya, hingga memulihkan/mengubah *password* mereka jika dibutuhkan.
+3. **Dashboard Admin**: Melihat *overview* singkat terkait total jumlah pengguna dan total stok yang berputar/dikelola oleh sistem.
+
+---
+
+## Rincian Fitur MVP Admin
+
+### 1. Dashboard Admin & Overview
+Admin memiliki halaman beranda tersendiri (`/admin/dashboard`) saat *login*.
+- **Metrik Utama**:
+  - Total Mitra Terdaftar
+  - Total Omzet Terpantau (Global)
+  - Total Produk Tersedia
+- **Routing & Proteksi**:
+  - Hanya user dengan kolom role `admin` pada database yang dapat mengakses rute `/admin/*`.
+  - Jika mitra (user biasa) mencoba mengakses akses admin, mereka akan diarahkan (*redirect*) ke dashboard biasa.
+
+### 2. Manajemen Master Data Produk
+Memanggil menu khusus untuk manajemen produk (`/admin/produk`).
+- **Tabel Produk**: Menampilkan semua produk yang disetujui untuk dijual oleh mitra.
+- **Operasi CRUD**:
+  - Create: Admin menambahkan produk baru ke *database*.
+  - Update: Mengubah nama atau status ketersediaan produk.
+  - **Struktur Paket Produk (Sesuai Konfigurasi Default)**:
+    - **Produk 1: STEFFI, BELGIE**
+      - Paket 200 btl @ Rp 150.000/btl (Total Rp 30.000.000)
+      - Paket 40 btl @ Rp 170.000/btl (Total Rp 6.800.000)
+      - Paket 10 btl @ Rp 180.000/btl (Total Rp 1.800.000)
+      - Paket 5 btl @ Rp 195.000/btl (Total Rp 975.000)
+      - Paket 3 btl @ Rp 195.000/btl (Total Rp 585.000)
+      - Satuan @ Rp 195.000/btl
+    - **Produk 2: BP, BRO, BRE, NORWAY**
+      - Paket 200 btl @ Rp 150.000/btl (Total Rp 30.000.000)
+      - Paket 40 btl @ Rp 170.000/btl (Total Rp 6.800.000)
+      - Paket 10 btl @ Rp 180.000/btl (Total Rp 1.800.000)
+      - Paket 5 btl @ Rp 198.000/btl (Total Rp 990.000)
+      - Paket 3 btl @ Rp 217.000/btl (Total Rp 651.000)
+      - Satuan @ Rp 250.000/btl
+  - Skema di atas akan dimasukkan ke tabel di *database* agar bisa dikonfigurasi melalui antarmuka Admin nanti (tidak *hardcode*).
+
+### 3. Kontrol Pengguna (Manajemen Mitra)
+Memanggil menu untuk kontrol akun mitra (`/admin/users`).
+- **Daftar User**: List seluruh pengguna terdaftar pada Supabase (beserta ID/Puskemas ID, Nama, Level Kemitraan).
+- **Update Level Mitra**: Admin dapat dengan mudah meng- *upgrade* atau men- *downgrade* status kemitraan seorang *user* secara langsung tanpa perlu *user* tersebut memintanya dari *settings* mereka (sentralisasi).
+- **Ubah/Reset Password**: Menyediakan fungsionalitas bagi Admin untuk mengubah *password* mitranya langsung menggunakan API Supabase Auth Admin.
+
+## Arsitektur: Split Repository (Pemisahan Git)
+Untuk meningkatkan keamanan tingkat lanjut sesuai best-practice industri, **Portal Admin akan dibangun di repository Git dan project terpisah** dari Portal Mitra.
+
+**Keuntungan Pemisahan Repositori:**
+1. **Isolasi Keamanan (Security Isolation)**: Jika portal mitra mengalami celah keamanan pada *frontend*-nya, kode sumber Admin (lengkap dengan jalur API khusus admin) tetap aman dan tidak akan bocor.
+2. **Performa Lebih Baik**: Bundle ukuran aplikasi mitra akan tetap ringan karena *library* berat seperti *chart* canggih dan *tabel grid* (khusus admin) hanya dipasang di pihak admin.
+3. **Pemisahan URL**: Anda bisa menyembunyikan portal admin di domain yang tidak diketahui publik atau menetapkan pembatasan IP jaringan.
+
+Keduanya tetap akan menggunakan **1 Database Supabase yang sama** sebagai pusat data (*Single Source of Truth*).
+
+---
+
+## Langkah Implementasi (Tahapan)
+
+1. **Persiapan Database & RLS (Supabase)**
+   - Memastikan *table* `profiles` memiliki logic role (`admin` vs `mitra`).
+   - Membuat/Memodifikasi *table* `master_products` (beserta baris skema tier harganya yang telah disepakati).
+   - Mengatur Row Level Security (RLS) di Supabase agar tabel `master_products` hanya bisa dimodifikasi oleh Admin.
+
+2. **Inisiasi Proyek Baru (Admin Portal)**
+   - Membuat *folder* project React/Vite baru khusus Admin.
+   - Konfigurasi *environment variables* yang mengarah ke *project* Supabase yang sama dengan milik Mitra.
+   - Menggunakan referensi *design system* yang setara tetapi dengan layout **Sidebar Kiri** khusus karena menu admin lebih kompleks.
+
+3. **Pembuatan UI Panel Admin (Di Repo Baru)**
+   - **Halaman DashboardAdmin**: Menampilkan ringkasan dan card pengguna.
+   - **Halaman Manajemen Produk**: Form daftar produk, persis layaknya screenshot "Pilih Produk" untuk menetapkan "BP, BRO, BRE, NORWAY" vs "STEFFI, BELGIE" beserta paket bundling harganya (mis: Paket 5 btl).
+   - **Halaman Manajemen User**: Tabel list user dengan pop-up (dialog) untuk ganti pasword/level.
+
+4. **Integrasi & Pengujian**
+   - Menautkan halaman Admin dengan Supabase secara Penuh.
+   - Migrasikan logic harga Mitra lama agar membaca dari Master Data Admin.
+   - Uji batas (*Boundaries Testing*): Mitra mencoba mengubah produk sendiri akan di- *reject*, dilarang oleh RLS.
+
+---
+*Silakan ditinjau rancangan MVP ini, jika sudah disetujui kita bisa memulai dari menyusun struktur database baru dan routingnya.*
