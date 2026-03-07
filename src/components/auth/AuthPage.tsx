@@ -8,13 +8,13 @@ import {
   Eye, EyeOff, KeyRound, ArrowLeft, MailCheck, RefreshCw
 } from 'lucide-react';
 
-// Design System
+// Design System (Admin Portal)
 const DS = {
-  primary: '#059669',     // Hijau Utama
-  navy: '#1E293B',        // Navy Gelap — teks utama
-  gray: '#64748B',        // Abu-abu Teks — sekunder
-  red: '#DC2626',         // Merah Peringatan
-  bgLight: '#F8FAFC',     // Abu-abu Terang — latar
+  primary: '#ec5b13',     // Oranye Admin
+  navy: '#221610',        // Gelap / Brownish
+  gray: '#64748B',        // Abu-abu
+  red: '#ef4444',         // Merah Peringatan
+  bgLight: '#f8f6f6',     // Latar Terang
 };
 
 type Mode = 'login' | 'register' | 'forgot' | 'success';
@@ -106,8 +106,8 @@ export function AuthPage() {
           {mode === 'success' && (
             <div className="flex flex-col items-center text-center gap-5 py-2">
               <div
-                className="w-20 h-20 rounded-3xl flex items-center justify-center shadow-xl"
-                style={{ background: 'linear-gradient(135deg, #059669, #34D399)', boxShadow: '0 8px 24px rgba(5,150,105,0.25)' }}
+                className="w-20 h-20 rounded-3xl flex items-center justify-center shadow-xl mb-4"
+                style={{ background: 'linear-gradient(135deg, #ec5b13, #f97316)', boxShadow: '0 8px 24px rgba(236,91,19,0.25)' }}
               >
                 <MailCheck className="h-10 w-10 text-white" strokeWidth={1.5} />
               </div>
@@ -135,7 +135,7 @@ export function AuthPage() {
                 ].map((text, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <span
-                      className="w-5 h-5 rounded-full text-white text-[10px] font-extrabold flex items-center justify-center shrink-0 mt-0.5"
+                      className="w-5 h-5 rounded-full text-white text-[10px] font-extrabold flex items-center justify-center shrink-0 mt-0.5 shadow-sm"
                       style={{ background: DS.primary }}
                     >
                       {i + 1}
@@ -184,32 +184,15 @@ export function AuthPage() {
                   </button>
                 )}
 
-                <h2 className="text-lg font-bold" style={{ color: DS.navy }}>
-                  {mode === 'login' ? 'Selamat Datang Kembali' : mode === 'register' ? 'Buat Akun Baru' : 'Lupa Password?'}
+                <h2 className="text-xl font-black mt-2" style={{ color: DS.navy }}>
+                  {mode === 'login' ? 'Portal Administrator' : 'Lupa Password Admin?'}
                 </h2>
-                <p className="text-xs mt-0.5" style={{ color: DS.gray }}>
-                  {mode === 'login' ? 'Masuk ke akun Anda' : mode === 'register' ? 'Daftar sebagai mitra baru' : 'Kami kirimkan link reset ke emailmu'}
+                <p className="text-xs mt-1 font-medium" style={{ color: DS.gray }}>
+                  {mode === 'login' ? 'Gunakan akun admin untuk mengelola Rekapan Mitra' : 'Kami kirimkan link reset ke email administrator Anda'}
                 </p>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-3">
-                {/* Nama */}
-                {mode === 'register' && (
-                  <div className="space-y-1">
-                    <label htmlFor="name" className="flex items-center gap-1.5 text-xs font-bold" style={{ color: DS.navy }}>
-                      <User className="h-3.5 w-3.5" style={{ color: DS.gray }} /> Nama Lengkap
-                    </label>
-                    <input
-                      id="name" type="text" placeholder="Nama Anda" value={name}
-                      onChange={e => setName(e.target.value)} required disabled={loading}
-                      className={inputBase}
-                      style={{ '--tw-ring-color': DS.primary } as any}
-                      onFocus={e => e.target.style.borderColor = DS.primary}
-                      onBlur={e => e.target.style.borderColor = '#E2E8F0'}
-                      autoComplete="name"
-                    />
-                  </div>
-                )}
+              <form onSubmit={handleSubmit} className="space-y-4">
 
                 {/* Email */}
                 <div className="space-y-1">
@@ -268,38 +251,21 @@ export function AuthPage() {
                   </div>
                 )}
 
-                {/* Submit */}
                 <button
                   type="submit" disabled={loading}
-                  className="w-full text-white text-sm font-bold py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 transition-all mt-1 active:scale-[0.98] disabled:opacity-70"
-                  style={{ background: DS.primary, boxShadow: '0 4px 15px rgba(5,150,105,0.25)' }}
+                  className="w-full text-white text-sm font-bold py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 transition-all mt-4 active:scale-[0.98] hover:opacity-90 disabled:opacity-70"
+                  style={{ background: DS.primary, boxShadow: '0 4px 15px rgba(236,91,19,0.25)' }}
                 >
                   {loading ? (
-                    <><Loader2 className="h-4 w-4 animate-spin" /> {mode === 'login' ? 'Masuk...' : mode === 'register' ? 'Mendaftar...' : 'Mengirim...'}</>
+                    <><Loader2 className="h-4 w-4 animate-spin" /> {mode === 'login' ? 'Memeriksa...' : 'Mengirim...'}</>
                   ) : (
                     <>
-                      <span>{mode === 'login' ? 'Masuk ke Akun' : mode === 'register' ? 'Daftar Sekarang' : 'Kirim Link Reset'}</span>
+                      <span>{mode === 'login' ? 'Masuk ke Portal Admin' : 'Kirim Link Reset'}</span>
                       {mode === 'login' && <LogIn className="h-4 w-4" />}
-                      {mode === 'register' && <UserPlus className="h-4 w-4" />}
                       {mode === 'forgot' && <KeyRound className="h-4 w-4" />}
                     </>
                   )}
                 </button>
-
-                {/* Toggle */}
-                {mode !== 'forgot' && (
-                  <div className="text-center pt-1">
-                    <button
-                      type="button"
-                      onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setName(''); }}
-                      disabled={loading}
-                      className="text-xs font-bold py-1 px-3 rounded-lg transition-colors hover:underline"
-                      style={{ color: DS.primary }}
-                    >
-                      {mode === 'login' ? 'Belum punya akun? Daftar' : 'Sudah punya akun? Masuk'}
-                    </button>
-                  </div>
-                )}
               </form>
             </>
           )}

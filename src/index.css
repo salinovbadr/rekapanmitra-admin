@@ -79,11 +79,16 @@ All colors MUST be HSL.
     --sidebar: 0 0% 100%;
 
     /* Chart: Hijau-hijau natural */
-    --chart-1: 161 91% 30%;   /* #059669 Hijau Utama */
-    --chart-2: 24 95% 53%;    /* #F97316 Oranye */
-    --chart-3: 224 90% 53%;   /* #2563EB Biru */
-    --chart-4: 43 96% 56%;    /* #FBBF24 Kuning */
-    --chart-5: 215 16% 47%;   /* #64748B Abu */
+    --chart-1: 161 91% 30%;
+    /* #059669 Hijau Utama */
+    --chart-2: 24 95% 53%;
+    /* #F97316 Oranye */
+    --chart-3: 224 90% 53%;
+    /* #2563EB Biru */
+    --chart-4: 43 96% 56%;
+    /* #FBBF24 Kuning */
+    --chart-5: 215 16% 47%;
+    /* #64748B Abu */
 
     --font-sans: 'Work Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
     --font-serif: 'Lora', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
@@ -162,6 +167,27 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background-light text-foreground font-display;
   }
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
 }

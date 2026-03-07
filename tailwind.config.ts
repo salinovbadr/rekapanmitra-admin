@@ -14,15 +14,27 @@ export default {
 		},
 		extend: {
 			colors: {
+				primary: {
+					DEFAULT: '#ec5b13',
+					foreground: 'hsl(var(--primary-foreground))'
+				},
+				background: {
+					light: '#f8f6f6',
+					dark: '#221610',
+					DEFAULT: 'hsl(var(--background))'
+				},
+				success: {
+					DEFAULT: '#10b981',
+					foreground: 'hsl(var(--primary-foreground))'
+				},
+				danger: {
+					DEFAULT: '#ef4444',
+					foreground: 'hsl(var(--destructive-foreground))'
+				},
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
-				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
-				primary: {
-					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
-				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
 					foreground: 'hsl(var(--secondary-foreground))'
@@ -105,6 +117,10 @@ export default {
 				'2xl': 'var(--shadow-2xl)'
 			},
 			fontFamily: {
+				display: [
+					'Public Sans',
+					'sans-serif'
+				],
 				sans: [
 					'Work Sans',
 					'ui-sans-serif',
