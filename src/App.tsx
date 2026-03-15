@@ -14,8 +14,9 @@ import { LoadingScreen } from "@/components/ui/LoadingScreen";
 // Lazy-load each page
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const ProdukPage = lazy(() => import("./pages/ProdukPage"));
-// Placeholder for future users page
-const UsersPage = lazy(() => import("./pages/DashboardPage"));
+const UsersPage = lazy(() => import("./pages/UsersPage"));
+const MonitoringSalesPage = lazy(() => import("./pages/MonitoringSalesPage"));
+const AkunPage = lazy(() => import("./pages/AkunPage"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage").then(m => ({ default: m.ResetPasswordPage })));
 
 const queryClient = new QueryClient({
@@ -73,8 +74,14 @@ const App = () => (
                 <Route path="products" element={
                   <Suspense fallback={<PageLoader />}><ProdukPage /></Suspense>
                 } />
+                <Route path="monitoring" element={
+                  <Suspense fallback={<PageLoader />}><MonitoringSalesPage /></Suspense>
+                } />
                 <Route path="users" element={
                   <Suspense fallback={<PageLoader />}><UsersPage /></Suspense>
+                } />
+                <Route path="settings" element={
+                  <Suspense fallback={<PageLoader />}><AkunPage /></Suspense>
                 } />
               </Route>
             </Route>

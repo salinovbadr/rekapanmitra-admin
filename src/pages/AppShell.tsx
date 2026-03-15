@@ -7,11 +7,13 @@ import {
     Box,
     Users,
     LogOut,
+    TrendingUp,
     Search,
     Bell,
     ShieldCheck,
     ChevronRight,
-    BarChart3
+    BarChart3,
+    Settings
 } from 'lucide-react';
 
 export default function AppShell() {
@@ -30,8 +32,10 @@ export default function AppShell() {
 
     const NAV_ITEMS = [
         { id: '/', label: 'Dashboard', icon: LayoutDashboard },
+        { id: '/monitoring', label: 'Monitoring', icon: TrendingUp },
         { id: '/products', label: 'Master Data', icon: Box },
         { id: '/users', label: 'Mitra Users', icon: Users },
+        { id: '/settings', label: 'Pengaturan', icon: Settings },
     ];
 
     if (!session) {

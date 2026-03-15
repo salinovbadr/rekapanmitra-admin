@@ -12,7 +12,8 @@ type MasterProduct = {
     is_active: boolean;
 };
 
-const CATEGORIES = ['STEFFI', 'BELGIE', 'BP', 'BRO', 'BRE', 'NORWAY'];
+// Derived categories from data
+const DEFAULT_CATEGORIES = ['STEFFI', 'BELGIE', 'BP', 'BRO', 'BRE', 'NORWAY'];
 const PACKAGE_TYPES = [
     { value: '200_botol', label: '200 Botol', qty: 200 },
     { value: '40_botol', label: '40 Botol', qty: 40 },
@@ -28,14 +29,27 @@ export default function ProdukPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<MasterProduct | null>(null);
     const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+    
+    // Category renaming state
+    const [editingCategory, setEditingCategory] = useState<string | null>(null);
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [isRenaming, setIsRenaming] = useState(false);
 
     // Form state
     const [name, setName] = useState('');
-    const [category, setCategory] = useState(CATEGORIES[0]);
+    const [category, setCategory] = useState(DEFAULT_CATEGORIES[0]);
     const [packageType, setPackageType] = useState(PACKAGE_TYPES[5].value);
     const [price, setPrice] = useState('');
     const [isActive, setIsActive] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const dynamicCategories = useMemo(() => {
+        const cats = Array.from(new Set(products.map(p => p.category)));
+        // Ensure default categories are always available for selection/filtering if needed, 
+        // or just use what's in the DB. Let's use what's in DB + defaults if empty for initial state.
+        if (cats.length === 0) return DEFAULT_CATEGORIES;
+        return cats.sort();
+    }, [products]);
 
     useEffect(() => {
         fetchProducts();
@@ -58,13 +72,13 @@ export default function ProdukPage() {
 
     const categoriesMap = useMemo(() => {
         const map: Record<string, MasterProduct[]> = {};
-        CATEGORIES.forEach(c => map[c] = []);
+        dynamicCategories.forEach(c => map[c] = []);
         products.forEach(p => {
             if (map[p.category]) map[p.category].push(p);
         });
-        CATEGORIES.forEach(c => map[c].sort((a, b) => b.quantity_per_package - a.quantity_per_package));
+        dynamicCategories.forEach(c => map[c].sort((a, b) => b.quantity_per_package - a.quantity_per_package));
         return map;
-    }, [products]);
+    }, [products, dynamicCategories]);
 
     const toggleExpand = (cat: string) => {
         setExpandedCategories(prev =>
@@ -83,7 +97,7 @@ export default function ProdukPage() {
         } else {
             setEditingProduct(null);
             setName('');
-            setCategory(defaultCategory || CATEGORIES[0]);
+            setCategory(defaultCategory || dynamicCategories[0] || DEFAULT_CATEGORIES[0]);
             setPackageType(PACKAGE_TYPES[5].value);
             setPrice('');
             setIsActive(true);
@@ -163,6 +177,41 @@ export default function ProdukPage() {
         }
     };
 
+    const handleStartRename = (e: React.MouseEvent, cat: string) => {
+        e.stopPropagation();
+        setEditingCategory(cat);
+        setNewCategoryName(cat);
+    };
+
+    const handleCancelRename = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setEditingCategory(null);
+        setNewCategoryName('');
+    };
+
+    const handleSaveRename = async (e: React.MouseEvent, oldName: string) => {
+        e.stopPropagation();
+        if (!newCategoryName.trim() || newCategoryName === oldName) {
+            setEditingCategory(null);
+            return;
+        }
+
+        setIsRenaming(true);
+        const { error } = await supabase
+            .from('master_products')
+            .update({ category: newCategoryName.trim() })
+            .eq('category', oldName);
+
+        if (error) {
+            toast.error("Gagal mengubah nama kategori", { description: error.message });
+        } else {
+            toast.success("Kategori berhasil diubah");
+            fetchProducts();
+        }
+        setIsRenaming(false);
+        setEditingCategory(null);
+    };
+
     return (
         <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto w-full relative">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -229,7 +278,7 @@ export default function ProdukPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-primary/5">
-                                {CATEGORIES.map(category => {
+                                {dynamicCategories.map(category => {
                                     const items = categoriesMap[category] || [];
                                     const isExpanded = expandedCategories.includes(category);
 
@@ -239,7 +288,33 @@ export default function ProdukPage() {
                                                 <td className="px-6 py-5">
                                                     <div className="flex items-center gap-3">
                                                         <span className="material-symbols-outlined text-slate-300">category</span>
-                                                        <div className="font-extrabold text-slate-800 text-base">{category}</div>
+                                                        {editingCategory === category ? (
+                                                            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                                                <input
+                                                                    type="text"
+                                                                    value={newCategoryName}
+                                                                    onChange={(e) => setNewCategoryName(e.target.value)}
+                                                                    className="px-2 py-1 border border-primary rounded-md text-sm outline-none"
+                                                                    autoFocus
+                                                                />
+                                                                <button onClick={(e) => handleSaveRename(e, category)} className="text-emerald-500 hover:text-emerald-600">
+                                                                    <span className="material-symbols-outlined text-lg">check</span>
+                                                                </button>
+                                                                <button onClick={handleCancelRename} className="text-rose-500 hover:text-rose-600">
+                                                                    <span className="material-symbols-outlined text-lg">close</span>
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex items-center gap-2 group/cat">
+                                                                <div className="font-extrabold text-slate-800 text-base">{category}</div>
+                                                                <button
+                                                                    onClick={(e) => handleStartRename(e, category)}
+                                                                    className="opacity-0 group-hover/cat:opacity-100 text-slate-400 hover:text-primary transition-all"
+                                                                >
+                                                                    <span className="material-symbols-outlined text-base">edit</span>
+                                                                </button>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </td>
                                                 <td colSpan={3} className="px-6 py-5 text-center text-sm text-slate-400 font-medium">Belum ada varian paket</td>
@@ -262,7 +337,37 @@ export default function ProdukPage() {
                                                 <td className="px-6 py-5">
                                                     <div className="flex items-center gap-3">
                                                         <span className={`material-symbols-outlined text-slate-400 transition-transform duration-300 ${isExpanded ? 'rotate-180 text-primary' : ''}`}>expand_more</span>
-                                                        <div className="font-extrabold text-slate-900 text-base tracking-tight">{category}</div>
+                                                        {editingCategory === category ? (
+                                                            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                                                <input
+                                                                    type="text"
+                                                                    value={newCategoryName}
+                                                                    onChange={(e) => setNewCategoryName(e.target.value)}
+                                                                    className="px-2 py-1 border border-primary rounded-md text-sm outline-none font-bold"
+                                                                    autoFocus
+                                                                />
+                                                                <button onClick={(e) => handleSaveRename(e, category)} className="text-emerald-500 hover:text-emerald-600">
+                                                                    {isRenaming ? (
+                                                                        <span className="material-symbols-outlined text-lg animate-spin">progress_activity</span>
+                                                                    ) : (
+                                                                        <span className="material-symbols-outlined text-lg">check</span>
+                                                                    )}
+                                                                </button>
+                                                                <button onClick={handleCancelRename} className="text-rose-500 hover:text-rose-600">
+                                                                    <span className="material-symbols-outlined text-lg">close</span>
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex items-center gap-2 group/cat">
+                                                                <div className="font-extrabold text-slate-900 text-base tracking-tight">{category}</div>
+                                                                <button
+                                                                    onClick={(e) => handleStartRename(e, category)}
+                                                                    className="opacity-0 group-hover/cat:opacity-100 text-slate-400 hover:text-primary transition-all"
+                                                                >
+                                                                    <span className="material-symbols-outlined text-base">edit</span>
+                                                                </button>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-5 text-center">
@@ -377,7 +482,7 @@ export default function ProdukPage() {
                                             onChange={(e) => setCategory(e.target.value)}
                                             className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium appearance-none focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                                         >
-                                            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                            {dynamicCategories.map(c => <option key={c} value={c}>{c}</option>)}
                                         </select>
                                         <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
                                     </div>
